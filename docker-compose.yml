@@ -13,22 +13,20 @@ services:
       - CONTEXT_SIZE=4096
       - THREADS=4
     volumes:
-      - ./models:/models:cached
-      - ./localai-data:/tmp/localai
+      - localai_models:/models
+      - localai_data:/tmp/localai
     restart: unless-stopped
     networks:
       - local-llm-network
 
-  # Node.js API Service
+  # Node.js API Service - USING PUBLISHED IMAGE
   api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: ghcr.io/inderjotpujara/localai-privacy-api:latest
     container_name: local-llm-api
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET}
       - LOCALAI_URL=http://localai:8080
@@ -37,12 +35,10 @@ services:
       - LOKI_URL=http://loki:3100
       - LOG_LEVEL=${LOG_LEVEL:-info}
     depends_on:
-      - postgres
-      - localai
-      - loki
-    volumes:
-      - ./api:/app:cached
-      - /app/node_modules
+      postgres:
+        condition: service_healthy
+      localai:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - local-llm-network
@@ -59,7 +55,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
     networks:
       - local-llm-network
@@ -70,8 +70,6 @@ services:
     container_name: loki
     ports:
       - "3100:3100"
-    volumes:
-      - ./infra/loki/local-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
     restart: unless-stopped
     networks:
@@ -82,7 +80,6 @@ services:
     image: grafana/promtail:2.9.0
     container_name: promtail
     volumes:
-      - ./infra/promtail/config.yaml:/etc/promtail/config.yml
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command: -config.file=/etc/promtail/config.yml
@@ -103,8 +100,6 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       - loki
     restart: unless-stopped
@@ -114,6 +109,8 @@ services:
 volumes:
   postgres_data:
   grafana_data:
+  localai_models:
+  localai_data:
 
 networks:
   local-llm-network:
