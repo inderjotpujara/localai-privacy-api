@@ -19,8 +19,10 @@ describe('Auth Middleware', () => {
       const token = generateTestToken(userId, email);
       
       // Decode the payload (without verification for testing)
+      const tokenParts = token.split('.');
+      expect(tokenParts).toHaveLength(3);
       const payload = JSON.parse(
-        Buffer.from(token.split('.')[1], 'base64').toString()
+        Buffer.from(tokenParts[1]!, 'base64').toString()
       );
       
       expect(payload.sub).toBe(userId);

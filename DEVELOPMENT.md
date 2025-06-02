@@ -10,6 +10,7 @@
 ## Quick Start
 
 1. **Clone and Setup**
+
    ```bash
    git clone <repository-url>
    cd local-llm
@@ -18,18 +19,20 @@
    ```
 
 2. **Start Development Environment**
+
    ```bash
    ./scripts/development.sh
    ```
 
 3. **Or manually start services**
+
    ```bash
    # Start infrastructure
    docker-compose up -d postgres loki promtail grafana localai
-   
+
    # Install API dependencies
    cd api && npm install
-   
+
    # Start API in development mode
    npm run dev
    ```
@@ -205,11 +208,13 @@ curl -X POST http://localhost:3000/rag/query \
 ### Common Issues
 
 1. **LocalAI not responding**
+
    - Check if model files exist in `models/` directory
    - Verify model configuration in YAML files
    - Check LocalAI logs: `docker-compose logs localai`
 
 2. **Database connection issues**
+
    - Ensure PostgreSQL is running: `docker-compose ps postgres`
    - Check database logs: `docker-compose logs postgres`
    - Verify connection string in `.env`
@@ -245,6 +250,7 @@ export LOCALAI_DEBUG=true
 ### Commit Convention
 
 Use conventional commits:
+
 - `feat:` new features
 - `fix:` bug fixes
 - `docs:` documentation
@@ -285,11 +291,11 @@ docker-compose -f docker-compose.prod.yml up -d
 ```yaml
 # In model YAML configuration
 parameters:
-  threads: 8              # Increase for better performance
-  context_size: 8192      # Increase for longer conversations
-  use_mlock: true         # Lock model in memory
-  use_mmap: true          # Memory map model file
-  batch_size: 512         # Batch processing size
+  threads: 8 # Increase for better performance
+  context_size: 8192 # Increase for longer conversations
+  use_mlock: true # Lock model in memory
+  use_mmap: true # Memory map model file
+  batch_size: 512 # Batch processing size
 ```
 
 ### Database Optimization
@@ -299,9 +305,9 @@ parameters:
 SET ivfflat.probes = 10;
 
 -- Monitor query performance
-EXPLAIN ANALYZE SELECT * FROM documents 
-WHERE embedding <-> '[...]' < 0.5 
-ORDER BY embedding <-> '[...]' 
+EXPLAIN ANALYZE SELECT * FROM documents
+WHERE embedding <-> '[...]' < 0.5
+ORDER BY embedding <-> '[...]'
 LIMIT 5;
 ```
 

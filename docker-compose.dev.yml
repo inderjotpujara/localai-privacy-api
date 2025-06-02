@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # Development overrides for docker-compose.yml
 # Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
@@ -8,7 +8,7 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
-      target: builder  # Use builder stage for development
+      target: builder # Use builder stage for development
     volumes:
       - ./api:/app:cached
       - /app/node_modules
@@ -32,7 +32,7 @@ services:
     environment:
       - POSTGRES_DB=llm_db_dev
     ports:
-      - "5433:5432"  # Different port for development
+      - "5433:5432" # Different port for development
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
 

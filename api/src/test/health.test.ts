@@ -2,6 +2,19 @@ import request from 'supertest';
 import express from 'express';
 import { healthRouter } from '../routes/health';
 
+// Mock the database and LocalAI services for testing
+jest.mock('../services/database', () => ({
+  Database: jest.fn().mockImplementation(() => ({
+    isHealthy: jest.fn().mockResolvedValue(true),
+  })),
+}));
+
+jest.mock('../services/localai', () => ({
+  LocalAIService: jest.fn().mockImplementation(() => ({
+    healthCheck: jest.fn().mockResolvedValue(true),
+  })),
+}));
+
 const app = express();
 app.use('/health', healthRouter);
 

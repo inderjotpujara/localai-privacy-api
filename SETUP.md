@@ -35,6 +35,7 @@ chmod +x scripts/docker-deploy.sh scripts/docker-health-check.sh scripts/docker-
 ```
 
 This script will:
+
 - Check prerequisites (Docker, Docker Compose)
 - Generate secure JWT secrets automatically
 - Build and deploy all services
@@ -76,16 +77,19 @@ LOG_LEVEL=info
 ### 4. Manual Service Startup (Optional)
 
 For development:
+
 ```bash
 docker-compose up -d
 ```
 
 For production:
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
 For development with live reload:
+
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
@@ -93,16 +97,19 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ### 5. Verify Installation
 
 Use our Docker-based health check:
+
 ```bash
 ./scripts/docker-health-check.sh
 ```
 
 Or run comprehensive tests:
+
 ```bash
 ./scripts/docker-test.sh
 ```
 
 Or manually check endpoints:
+
 ```bash
 # Health check
 curl http://localhost:3000/health
@@ -136,24 +143,24 @@ local-llm/
 
 ### Environment Variables
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `JWT_SECRET` | Secret for JWT token signing | - | ✅ |
-| `DATABASE_URL` | PostgreSQL connection string | localhost:5432 | ✅ |
-| `LOCALAI_URL` | LocalAI service URL | http://localhost:8080 | ✅ |
-| `PORT` | API server port | 3000 | ❌ |
-| `NODE_ENV` | Environment mode | development | ❌ |
-| `LOG_LEVEL` | Logging level | info | ❌ |
+| Variable       | Description                  | Default               | Required |
+| -------------- | ---------------------------- | --------------------- | -------- |
+| `JWT_SECRET`   | Secret for JWT token signing | -                     | ✅       |
+| `DATABASE_URL` | PostgreSQL connection string | localhost:5432        | ✅       |
+| `LOCALAI_URL`  | LocalAI service URL          | http://localhost:8080 | ✅       |
+| `PORT`         | API server port              | 3000                  | ❌       |
+| `NODE_ENV`     | Environment mode             | development           | ❌       |
+| `LOG_LEVEL`    | Logging level                | info                  | ❌       |
 
 ### Service Ports
 
-| Service | Port | Description |
-|---------|------|-------------|
-| API Server | 3000 | Main API endpoints |
-| LocalAI | 8080 | LLM inference engine |
-| PostgreSQL | 5432 | Database |
-| Grafana | 3001 | Monitoring dashboard |
-| Loki | 3100 | Log aggregation |
+| Service    | Port | Description          |
+| ---------- | ---- | -------------------- |
+| API Server | 3000 | Main API endpoints   |
+| LocalAI    | 8080 | LLM inference engine |
+| PostgreSQL | 5432 | Database             |
+| Grafana    | 3001 | Monitoring dashboard |
+| Loki       | 3100 | Log aggregation      |
 
 ## Model Configuration
 
@@ -168,6 +175,7 @@ To add custom models, create YAML files in the `models/` directory following the
 ## Authentication
 
 Default credentials (change in production):
+
 - Username: `admin`
 - Password: `admin123`
 
@@ -313,6 +321,7 @@ Run the test suite:
 ## Support
 
 For issues and questions:
+
 1. Check the logs using the commands above
 2. Review the troubleshooting section in README.md
 3. Verify all environment variables are set correctly

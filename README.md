@@ -21,6 +21,7 @@ A privacy-first Node.js (TypeScript) API façade that proxies LocalAI running Ll
 ### Development Environment
 
 1. **Clone and Setup**
+
    ```bash
    git clone <repo-url>
    cd local-llm
@@ -29,12 +30,14 @@ A privacy-first Node.js (TypeScript) API façade that proxies LocalAI running Ll
    ```
 
 2. **Start Infrastructure Services**
+
    ```bash
    # Start database, logging, and monitoring
    docker-compose up -d postgres loki grafana promtail
    ```
 
 3. **Install Dependencies and Start API**
+
    ```bash
    cd api
    npm install
@@ -49,6 +52,7 @@ A privacy-first Node.js (TypeScript) API façade that proxies LocalAI running Ll
 ### Production Deployment
 
 1. **Configure Production Environment**
+
    ```bash
    cp .env.prod.sample .env.prod
    # Edit .env.prod with secure passwords and secrets
@@ -62,12 +66,14 @@ A privacy-first Node.js (TypeScript) API façade that proxies LocalAI running Ll
 ## 📡 API Endpoints
 
 ### Health Check
+
 ```bash
 GET /health
 # Returns: { status: "ok", timestamp: "...", services: {...} }
 ```
 
 ### Chat (Streaming & Non-Streaming)
+
 ```bash
 # Regular chat
 POST /chat
@@ -81,6 +87,7 @@ Body: { "message": "Hello!", "model": "phi-2", "stream": true }
 ```
 
 ### RAG Document Management
+
 ```bash
 # Upload document
 POST /rag/documents
@@ -101,6 +108,7 @@ Headers: Authorization: Bearer <jwt-token>
 ```
 
 ### RAG Query
+
 ```bash
 POST /rag/query
 Headers: Authorization: Bearer <jwt-token>
@@ -131,6 +139,7 @@ Body: { "query": "What is Node.js?", "limit": 5 }
 ## API Endpoints
 
 ### Chat
+
 ```bash
 # Regular chat
 POST /chat
@@ -142,12 +151,13 @@ POST /chat
 # Streaming chat (SSE)
 POST /chat
 {
-  "message": "Your message", 
+  "message": "Your message",
   "stream": true
 }
 ```
 
 ### RAG Query
+
 ```bash
 POST /rag/query
 {
@@ -167,22 +177,24 @@ npm run dev
 ## Docker Hub
 
 Multi-arch images are automatically built and pushed:
+
 - `your-username/local-llm:latest`
 - `your-username/local-llm:${GITHUB_SHA}`
 
 ## Privacy Guarantees
 
-| Component | Data Location | External Calls |
-|-----------|---------------|----------------|
-| Chat Messages | Local only | None |
-| Vector Embeddings | Local pgvector | None |
-| Auth Tokens | Local verification | None |
-| Logs/Metrics | Local Loki/Grafana | None |
-| Model Weights | Local Docker volumes | None |
+| Component         | Data Location        | External Calls |
+| ----------------- | -------------------- | -------------- |
+| Chat Messages     | Local only           | None           |
+| Vector Embeddings | Local pgvector       | None           |
+| Auth Tokens       | Local verification   | None           |
+| Logs/Metrics      | Local Loki/Grafana   | None           |
+| Model Weights     | Local Docker volumes | None           |
 
 ## Apple Silicon Notes
 
 For optimal performance on Apple Silicon:
+
 1. Use LocalAI with Metal acceleration
 2. Set `LOCALAI_BACKEND=metal` in `.env`
 3. Ensure Docker Desktop uses Apple Silicon images
@@ -201,18 +213,21 @@ MIT
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 cd api
 npm test
 ```
 
 ### Integration Testing
+
 ```bash
 # Test all endpoints with mock data
 ./scripts/test-endpoints.sh
 ```
 
 ### Load Testing
+
 ```bash
 # Test with 10 concurrent users for 60 seconds
 ./scripts/load-test.sh http://localhost:3000 10 60
@@ -221,16 +236,19 @@ npm test
 ## 📊 Monitoring & Observability
 
 ### Grafana Dashboard
+
 - URL: http://localhost:3001
 - Default credentials: admin/admin
 - Dashboards include: API metrics, LocalAI performance, database stats
 
 ### Log Aggregation
+
 - Loki: http://localhost:3100
 - All logs centralized and searchable
 - Structured logging with correlation IDs
 
 ### Health Checks
+
 ```bash
 # API health
 curl http://localhost:3000/health
@@ -269,18 +287,21 @@ local-llm/
 ## 🚀 Deployment
 
 ### Development
+
 ```bash
 # Start all services in development mode
 ./scripts/development.sh
 ```
 
 ### Production
+
 ```bash
 # Deploy to production with health checks
 ./scripts/deploy-prod.sh
 ```
 
 ### Docker Build
+
 ```bash
 # Build multi-architecture images
 docker buildx build --platform linux/amd64,linux/arm64 \
@@ -292,17 +313,19 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development` |
-| `PORT` | API server port | `3000` |
-| `DATABASE_URL` | PostgreSQL connection string | `postgres://...` |
-| `JWT_SECRET` | JWT signing secret | Required |
-| `LOCALAI_URL` | LocalAI service URL | `http://localhost:8080` |
-| `LOG_LEVEL` | Logging level | `info` |
+| Variable       | Description                  | Default                 |
+| -------------- | ---------------------------- | ----------------------- |
+| `NODE_ENV`     | Environment mode             | `development`           |
+| `PORT`         | API server port              | `3000`                  |
+| `DATABASE_URL` | PostgreSQL connection string | `postgres://...`        |
+| `JWT_SECRET`   | JWT signing secret           | Required                |
+| `LOCALAI_URL`  | LocalAI service URL          | `http://localhost:8080` |
+| `LOG_LEVEL`    | Logging level                | `info`                  |
 
 ### Model Configuration
+
 Models are configured in YAML files in the `models/` directory:
+
 - `llama3.yaml` - Full Llama-3 model
 - `phi-2.yaml` - Lightweight Phi-2 model for testing
 - `embeddings.yaml` - Text embedding model for RAG
@@ -310,11 +333,13 @@ Models are configured in YAML files in the `models/` directory:
 ## 🛠️ Development
 
 ### Prerequisites
+
 - Node.js 18+
 - Docker & Docker Compose
 - Git
 
 ### Setup Development Environment
+
 ```bash
 # Clone repository
 git clone <repo-url>
@@ -334,6 +359,7 @@ npm run dev
 ```
 
 ### Adding New Features
+
 1. Create feature branch: `git checkout -b feature/new-feature`
 2. Implement changes with tests
 3. Run test suite: `npm test`
@@ -342,6 +368,7 @@ npm run dev
 ## 🚨 Troubleshooting
 
 ### LocalAI Issues
+
 ```bash
 # Check LocalAI logs
 docker-compose logs localai
@@ -353,6 +380,7 @@ docker-compose logs localai
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Check PostgreSQL status
 docker-compose ps postgres
@@ -364,6 +392,7 @@ docker-compose up -d postgres
 ```
 
 ### API Performance Issues
+
 ```bash
 # Monitor container resources
 docker stats
@@ -377,12 +406,12 @@ docker-compose exec postgres psql -U postgres -c "SELECT * FROM pg_stat_activity
 
 ### Common Error Messages
 
-| Error | Solution |
-|-------|----------|
-| `ECONNREFUSED` to database | Ensure PostgreSQL is running |
-| `JWT token invalid` | Check JWT_SECRET configuration |
-| `LocalAI not responding` | Wait for model download to complete |
-| `Port already in use` | Change port in .env or stop conflicting service |
+| Error                      | Solution                                        |
+| -------------------------- | ----------------------------------------------- |
+| `ECONNREFUSED` to database | Ensure PostgreSQL is running                    |
+| `JWT token invalid`        | Check JWT_SECRET configuration                  |
+| `LocalAI not responding`   | Wait for model download to complete             |
+| `Port already in use`      | Change port in .env or stop conflicting service |
 
 ## 📜 License
 
