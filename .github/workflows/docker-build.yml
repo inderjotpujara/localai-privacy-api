@@ -1,4 +1,4 @@
-name: Build and Push Multi-Arch Docker Images
+name: Build and Push Docker Images
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/local-llm-api
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -91,6 +91,12 @@ jobs:
       run: |
         cd api
         npm ci
+
+    - name: Run linter (if configured)
+      run: |
+        cd api
+        if npm run lint --if-present; then echo "Linting completed"; fi
+      continue-on-error: true
 
     - name: Run tests
       run: |
