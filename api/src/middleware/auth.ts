@@ -51,7 +51,7 @@ export const authMiddleware = (
         ...decoded
       };
 
-      logger.debug(`Authenticated user: ${req.user.id}`);
+      logger.debug(`Authenticated user: ${req.user?.id}`);
       next();
 
     } catch (jwtError) {

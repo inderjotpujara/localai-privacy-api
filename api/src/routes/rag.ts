@@ -194,6 +194,14 @@ router.get('/documents/:id', async (req: AuthenticatedRequest, res: Response) =>
     const { id } = req.params;
     const userId = req.user?.id || 'anonymous';
 
+    if (!id) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Document ID is required',
+      });
+      return;
+    }
+
     logger.debug({ userId, documentId: id }, 'Retrieving document');
 
     const document = await database.getDocumentById(id);
@@ -226,6 +234,14 @@ router.delete('/documents/:id', async (req: AuthenticatedRequest, res: Response)
   try {
     const { id } = req.params;
     const userId = req.user?.id || 'anonymous';
+
+    if (!id) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Document ID is required',
+      });
+      return;
+    }
 
     logger.info({ userId, documentId: id }, 'Deleting document');
 

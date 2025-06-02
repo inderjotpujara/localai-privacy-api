@@ -1,0 +1,134 @@
+services:
+  # Node.js API Service (Production)
+  api:
+    image: ghcr.io/your-username/local-llm-api/local-llm-api:latest
+    container_name: local-llm-api-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-localllm}
+      - LOCALAI_URL=http://localai:8080
+      - JWT_SECRET=${JWT_SECRET}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localai:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - local-llm-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # LocalAI Service (Production)
+  localai:
+    image: localai/localai:latest-aio-cpu
+    container_name: localai-prod
+    ports:
+      - "8080:8080"
+    environment:
+      - DEBUG=false
+      - MODELS_PATH=/models
+      - CONTEXT_SIZE=4096
+      - THREADS=4
+      - PRELOAD_MODELS=phi-2
+    volumes:
+      - ./models:/models:cached
+      - localai-data:/tmp/localai
+    restart: unless-stopped
+    networks:
+      - local-llm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # PostgreSQL with pgvector (Production)
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: postgres-prod
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-localllm}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - local-llm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Loki for log aggregation (Production)
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki-prod
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infra/loki/local-config.yaml:/etc/loki/local-config.yaml
+      - loki_data_prod:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - local-llm-network
+
+  # Promtail for log collection (Production)
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail-prod
+    volumes:
+      - ./infra/promtail/config.yaml:/etc/promtail/config.yaml
+      - ./logs:/var/log/app
+      - /var/log:/var/log/host:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yaml
+    restart: unless-stopped
+    networks:
+      - local-llm-network
+    depends_on:
+      - loki
+
+  # Grafana for observability (Production)
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: grafana-prod
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources
+      - grafana_data_prod:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - local-llm-network
+    depends_on:
+      - loki
+
+networks:
+  local-llm-network:
+    driver: bridge
+
+volumes:
+  postgres_data_prod:
+  loki_data_prod:
+  grafana_data_prod:
+  localai-data:

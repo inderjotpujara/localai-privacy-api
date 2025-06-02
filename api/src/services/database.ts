@@ -209,7 +209,7 @@ export class Database {
       `;
 
       const result = await client.query(query, values);
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
       
     } catch (error) {
       logger.error('Error updating document:', error);
@@ -225,7 +225,7 @@ export class Database {
     try {
       const query = 'DELETE FROM documents WHERE id = $1';
       const result = await client.query(query, [id]);
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
       
     } catch (error) {
       logger.error('Error deleting document:', error);
