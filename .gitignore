@@ -22,6 +22,9 @@ logs/
 loki/
 promtail/
 
+# LocalAI data directory (contains downloaded models)
+localai-data/
+
 # Runtime data
 pids/
 *.pid
