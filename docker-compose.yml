@@ -21,7 +21,7 @@ services:
 
   # Node.js API Service - USING PUBLISHED IMAGE
   api:
-    image: ghcr.io/inderjotpujara/localai-privacy-api:latest
+    image: ghcr.io/inderjotpujara/localai-privacy-api:main
     container_name: local-llm-api
     ports:
       - "3000:3000"
