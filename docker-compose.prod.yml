@@ -1,21 +1,29 @@
 services:
   # Node.js API Service (Production)
   api:
-    image: ghcr.io/your-username/local-llm-api/local-llm-api:latest
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: production
     container_name: local-llm-api-prod
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-localllm}
+      - PORT=3000
+      - DATABASE_URL=postgresql://llm_user:${POSTGRES_PASSWORD:-llm_password}@postgres:5432/llm_db
       - LOCALAI_URL=http://localai:8080
+      - LOCALAI_MODEL=${LOCALAI_MODEL:-llama3}
       - JWT_SECRET=${JWT_SECRET}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOKI_URL=http://loki:3100
     depends_on:
       postgres:
         condition: service_healthy
       localai:
         condition: service_healthy
+      loki:
+        condition: service_started
     restart: unless-stopped
     networks:
       - local-llm-network
@@ -25,6 +33,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # LocalAI Service (Production)
   localai:
