@@ -1,4 +1,4 @@
-import sqlite3 from 'sqlite3';
+import * as sqlite3 from 'sqlite3';
 import { Database as SqliteDatabase, open } from 'sqlite';
 import pino from 'pino';
 import { Document, RAGResult } from '../types';
@@ -100,7 +100,7 @@ export class Database {
         [limit]
       );
       
-      return rows.map((row, index) => ({
+      return rows.map((row: any, index: number) => ({
         content: row.content,
         metadata: JSON.parse(row.metadata || '{}'),
         similarity_score: Math.max(0.5, 1 - (index * 0.1)), // Mock decreasing similarity
@@ -128,8 +128,8 @@ export class Database {
         id: row.id,
         content: row.content,
         metadata: JSON.parse(row.metadata || '{}'),
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at)
+        created_at: row.created_at,
+        updated_at: row.updated_at
       };
       
     } catch (error) {
