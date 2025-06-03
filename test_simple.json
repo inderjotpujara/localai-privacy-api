@@ -1,7 +1,0 @@
-{
-  "model": "llama3.2:1b",
-  "messages": [
-    {"role": "user", "content": "Hello! Say hi back in one sentence."}
-  ],
-  "max_tokens": 50
-}

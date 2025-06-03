@@ -51,6 +51,29 @@ npm start
 
 Then start Ollama separately or use the full Docker Compose setup.
 
+## Management Script
+
+Use the included management script for easy operations:
+
+```bash
+# Check status of containers, models, and API
+./scripts/manage.sh status
+
+# Quick API test
+./scripts/manage.sh test
+
+# Run comprehensive tests
+./scripts/manage.sh tests
+
+# Start/stop/restart services
+./scripts/manage.sh start
+./scripts/manage.sh stop
+./scripts/manage.sh restart
+
+# View logs
+./scripts/manage.sh logs
+```
+
 ## Model Information
 
 The project uses Llama 3.2 1B, which is automatically downloaded on first run. The model provides:

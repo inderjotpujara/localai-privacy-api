@@ -1,5 +1,0 @@
-{
-  "model": "llama3.2:1b",
-  "prompt": "Hello! Tell me a short joke.",
-  "stream": false
-}
