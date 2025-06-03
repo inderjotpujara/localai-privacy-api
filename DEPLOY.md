@@ -12,22 +12,26 @@ curl -s https://raw.githubusercontent.com/inderjotpujara/localai-privacy-api/mai
 ## Step-by-Step Deployment
 
 1. **Download the production compose file:**
+
 ```bash
 curl -O https://raw.githubusercontent.com/inderjotpujara/localai-privacy-api/main/docker-compose.prod.yml
 ```
 
 2. **Start the services:**
+
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
 
 3. **Wait for model download (first run only):**
+
 ```bash
 # Check logs to see download progress
 docker compose -f docker-compose.prod.yml logs -f ollama
 ```
 
 4. **Test the API:**
+
 ```bash
 curl -X POST http://localhost:3000/chat \
   -H "Content-Type: application/json" \
@@ -41,6 +45,7 @@ curl -X POST http://localhost:3000/chat \
 ## Advanced Options
 
 ### Custom Model
+
 To use a different model, modify the Ollama service after startup:
 
 ```bash
@@ -58,6 +63,7 @@ curl -X POST http://localhost:3000/chat \
 ```
 
 ### Environment Variables
+
 Create a `.env` file to customize settings:
 
 ```bash
@@ -68,6 +74,7 @@ OLLAMA_HOST=0.0.0.0
 ```
 
 ### Update to Latest
+
 ```bash
 # Pull latest images and restart
 docker compose -f docker-compose.prod.yml pull
@@ -77,17 +84,21 @@ docker compose -f docker-compose.prod.yml up -d
 ## Monitoring
 
 ### Health Checks
+
 Both services include health checks:
+
 ```bash
 docker compose -f docker-compose.prod.yml ps
 ```
 
 ### Resource Usage
+
 ```bash
 docker stats $(docker compose -f docker-compose.prod.yml ps -q)
 ```
 
 ### Logs
+
 ```bash
 # All services
 docker compose -f docker-compose.prod.yml logs -f

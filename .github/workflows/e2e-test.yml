@@ -1,0 +1,93 @@
+name: End-to-End Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Start services with docker-compose
+      run: |
+        echo "🚀 Starting Local LLM services..."
+        docker compose up -d
+        
+        echo "⏳ Waiting for services to be ready..."
+        sleep 30
+
+    - name: Wait for Ollama to be ready
+      run: |
+        echo "🤖 Waiting for Ollama service..."
+        for i in {1..30}; do
+          if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+            echo "✅ Ollama is ready!"
+            break
+          fi
+          echo "Waiting... ($i/30)"
+          sleep 10
+        done
+
+    - name: Pull test model
+      run: |
+        echo "📥 Pulling Llama 3.2 1B model..."
+        docker exec $(docker compose ps -q ollama) ollama pull llama3.2:1b
+        echo "✅ Model downloaded!"
+
+    - name: Wait for API to be ready
+      run: |
+        echo "🌐 Waiting for API service..."
+        for i in {1..20}; do
+          if curl -s http://localhost:3000 >/dev/null 2>&1; then
+            echo "✅ API is ready!"
+            break
+          fi
+          echo "Waiting... ($i/20)"
+          sleep 5
+        done
+
+    - name: Test API endpoint
+      run: |
+        echo "🧪 Testing API endpoint..."
+        response=$(curl -s -X POST http://localhost:3000/chat \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "llama3.2:1b",
+            "messages": [{"role": "user", "content": "Hello! Say hi back in one word."}],
+            "max_tokens": 10
+          }' \
+          --max-time 60)
+        
+        echo "Response: $response"
+        
+        # Check if response contains expected fields
+        if echo "$response" | jq -e '.choices[0].message.content' >/dev/null 2>&1; then
+          echo "✅ API test passed!"
+          echo "Content: $(echo "$response" | jq -r '.choices[0].message.content')"
+        else
+          echo "❌ API test failed!"
+          echo "Full response: $response"
+          exit 1
+        fi
+
+    - name: Show container logs
+      if: always()
+      run: |
+        echo "📋 Container logs:"
+        echo "=== API Logs ==="
+        docker compose logs api
+        echo "=== Ollama Logs ==="
+        docker compose logs ollama
+
+    - name: Cleanup
+      if: always()
+      run: |
+        echo "🧹 Cleaning up..."
+        docker compose down -v

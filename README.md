@@ -2,7 +2,15 @@
 
 ## Quickstart
 
-### Option 1: Using Pre-built Image (Recommended)
+### Option 1: Production Deployment (Recommended)
+
+**One-command deployment with pre-built image:**
+
+```bash
+curl -s https://raw.githubusercontent.com/inderjotpujara/localai-privacy-api/main/docker-compose.prod.yml | docker compose -f - up -d
+```
+
+**Or step-by-step:**
 
 1. Download the production compose file:
 ```bash
@@ -16,11 +24,15 @@ docker compose -f docker-compose.prod.yml up -d
 
 3. Wait for Ollama to download the Llama 3.2 1B model (first run only)
 
-### Option 2: Build from Source
+*Uses pre-built Docker image from GitHub Container Registry - no compilation needed!*
+
+### Option 2: Development (Build from Source)
 
 1. Clone this repo
 2. `docker compose up --build`
 3. Wait for Ollama to download the Llama 3.2 1B model (first run only)
+
+*Builds the API from source code - useful for development and modifications.*
 
 ### Test the API:
 
@@ -58,10 +70,16 @@ This is a privacy-first microservice that brings up:
 
 ## Docker Images
 
-Pre-built Docker images are automatically published to GitHub Container Registry:
+Pre-built Docker images are automatically built and published to GitHub Container Registry on every push to main:
 
 - **Latest stable**: `ghcr.io/inderjotpujara/localai-privacy-api:latest`
 - **Development**: `ghcr.io/inderjotpujara/localai-privacy-api:main`
+
+**Automated builds include:**
+- ✅ Multi-architecture support (AMD64 + ARM64)
+- ✅ Automatic testing and validation
+- ✅ Optimized caching for faster builds
+- ✅ Public availability (no authentication required)
 
 ### Manual Docker Run
 
@@ -128,3 +146,22 @@ The project uses Llama 3.2 1B, which is automatically downloaded on first run. T
 - RAG (Retrieval Augmented Generation) capabilities
 - Additional model support
 - Enhanced error handling and logging
+
+## 🚀 How It Works
+
+This project provides **two ways** to run the Local LLM:
+
+### 1. **Production Mode** (`docker-compose.prod.yml`)
+- ✅ **Pulls pre-built image** from GitHub Container Registry
+- ✅ **No compilation** - instant deployment
+- ✅ **Multi-architecture** support (AMD64 + ARM64)
+- ✅ **Health checks** and auto-restart
+- ✅ **Perfect for users** who just want to use the API
+
+### 2. **Development Mode** (`docker-compose.yml`)
+- 🔧 **Builds from source** code in `./api/` directory
+- 🔧 **Good for development** and modifications
+- 🔧 **Platform-specific** builds
+- 🔧 **Perfect for contributors** who want to modify the code
+
+The **GitHub workflow** automatically builds and publishes the Docker image whenever code is pushed to main, so users can always get the latest stable version without compiling anything!
