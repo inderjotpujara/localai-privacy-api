@@ -1,0 +1,11 @@
+{
+  "model": "llama3.2:1b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello!"
+    }
+  ],
+  "stream": false,
+  "max_tokens": 50
+}
