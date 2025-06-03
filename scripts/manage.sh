@@ -146,6 +146,186 @@ run_tests() {
     print_success "All tests completed"
 }
 
+# Function to test summarization endpoints
+test_summarize() {
+    print_status "📄 Testing /summarize endpoint..."
+    
+    # First check if the API is reachable
+    if ! curl -s http://localhost:3000/chat --max-time 5 >/dev/null 2>&1; then
+        print_error "API server is not responding on http://localhost:3000"
+        print_warning "Make sure the Local LLM services are running:"
+        echo "  • ./scripts/manage.sh start"
+        echo "  • ./scripts/manage.sh start-prod"
+        echo "  • ./scripts/manage.sh start-curl"
+        return 1
+    fi
+    
+    echo ""
+    
+    local sample_text="Artificial Intelligence (AI) has been one of the most transformative technologies of the 21st century. From its early theoretical foundations laid by pioneers like Alan Turing in the 1950s, AI has evolved from simple rule-based systems to sophisticated machine learning algorithms capable of tasks that were once thought to be exclusively human. Today, AI powers everything from recommendation systems on streaming platforms to autonomous vehicles navigating complex city streets. The field encompasses various subdomains including natural language processing, computer vision, robotics, and deep learning. Machine learning, in particular, has seen explosive growth with the development of neural networks that can learn from vast amounts of data. However, with great power comes great responsibility, and the AI community continues to grapple with ethical considerations around bias, privacy, job displacement, and the potential for artificial general intelligence. As we move forward, the integration of AI into our daily lives will only deepen, making it crucial for society to understand both its potential benefits and risks."
+    
+    # Test 1: Basic summarization
+    print_status "Test 1: Basic summarization"
+    echo "------------------------"
+    if response=$(curl -s -X POST http://localhost:3000/summarize \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"text\": \"$sample_text\",
+            \"instructions\": \"Provide a concise summary in 2-3 sentences\",
+            \"max_tokens\": 100
+        }" --max-time 60 2>/dev/null); then
+        
+        if echo "$response" | jq -e '.summary' >/dev/null 2>&1; then
+            echo "$response" | jq -r '.summary'
+            print_success "Basic summarization test passed"
+        else
+            print_error "Basic summarization test failed - invalid response format"
+            echo "Response: $response"
+        fi
+    else
+        print_error "Basic summarization test failed - connection error"
+    fi
+    
+    echo ""
+    echo ""
+    
+    # Test 2: Bullet point summary
+    print_status "Test 2: Bullet point summary"
+    echo "----------------------------"
+    if response=$(curl -s -X POST http://localhost:3000/summarize \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"text\": \"$sample_text\",
+            \"instructions\": \"Create a bullet-point summary with key points\",
+            \"max_tokens\": 150
+        }" --max-time 60 2>/dev/null); then
+        
+        if echo "$response" | jq -e '.summary' >/dev/null 2>&1; then
+            echo "$response" | jq -r '.summary'
+            print_success "Bullet point summarization test passed"
+        else
+            print_error "Bullet point summarization test failed - invalid response format"
+        fi
+    else
+        print_error "Bullet point summarization test failed - connection error"
+    fi
+    
+    echo ""
+    echo ""
+    
+    # Test 3: Technical summary
+    print_status "Test 3: Technical summary for experts"
+    echo "------------------------------------"
+    if response=$(curl -s -X POST http://localhost:3000/summarize \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"text\": \"$sample_text\",
+            \"instructions\": \"Provide a technical summary focusing on AI subdomains and challenges\",
+            \"max_tokens\": 120
+        }" --max-time 60 2>/dev/null); then
+        
+        if echo "$response" | jq -e '.summary' >/dev/null 2>&1; then
+            echo "$response" | jq -r '.summary'
+            print_success "Technical summarization test passed"
+        else
+            print_error "Technical summarization test failed - invalid response format"
+        fi
+    else
+        print_error "Technical summarization test failed - connection error"
+    fi
+    
+    echo ""
+    print_success "Summarization testing complete!"
+}
+
+# Function to test custom summarization endpoint
+test_custom_summarize() {
+    print_status "🎨 Testing /custom-summarize endpoint..."
+    echo ""
+    
+    local sample_text="Artificial Intelligence (AI) has been one of the most transformative technologies of the 21st century. From its early theoretical foundations laid by pioneers like Alan Turing in the 1950s, AI has evolved from simple rule-based systems to sophisticated machine learning algorithms capable of tasks that were once thought to be exclusively human. Today, AI powers everything from recommendation systems on streaming platforms to autonomous vehicles navigating complex city streets. The field encompasses various subdomains including natural language processing, computer vision, robotics, and deep learning. Machine learning, in particular, has seen explosive growth with the development of neural networks that can learn from vast amounts of data. However, with great power comes great responsibility, and the AI community continues to grapple with ethical considerations around bias, privacy, job displacement, and the potential for artificial general intelligence. As we move forward, the integration of AI into our daily lives will only deepen, making it crucial for society to understand both its potential benefits and risks."
+    
+    # Test 1: Bullet-point style summary
+    print_status "Test 1: Bullet-point style summary"
+    echo "--------------------------------"
+    if response=$(curl -s -X POST http://localhost:3000/custom-summarize \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"text\": \"$sample_text\",
+            \"style\": \"bullet-points\",
+            \"tone\": \"neutral\",
+            \"length\": \"medium\",
+            \"max_tokens\": 200
+        }" --max-time 60 2>/dev/null); then
+        
+        if echo "$response" | jq -e '.summary' >/dev/null 2>&1; then
+            echo "$response" | jq -r '.summary'
+            print_success "Bullet-point style test passed"
+        else
+            print_error "Bullet-point style test failed - invalid response format"
+            echo "Response: $response"
+        fi
+    else
+        print_error "Bullet-point style test failed - connection error"
+    fi
+    
+    echo ""
+    echo ""
+    
+    # Test 2: Technical summary with formal tone
+    print_status "Test 2: Technical summary with formal tone"
+    echo "----------------------------------------"
+    if response=$(curl -s -X POST http://localhost:3000/custom-summarize \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"text\": \"$sample_text\",
+            \"style\": \"technical\",
+            \"tone\": \"formal\",
+            \"length\": \"long\",
+            \"focus_areas\": [\"machine learning\", \"ethics\", \"applications\"],
+            \"max_tokens\": 250
+        }" --max-time 60 2>/dev/null); then
+        
+        if echo "$response" | jq -e '.summary' >/dev/null 2>&1; then
+            echo "$response" | jq -r '.summary'
+            print_success "Technical formal summary test passed"
+        else
+            print_error "Technical formal summary test failed - invalid response format"
+        fi
+    else
+        print_error "Technical formal summary test failed - connection error"
+    fi
+    
+    echo ""
+    echo ""
+    
+    # Test 3: Creative summary with casual tone
+    print_status "Test 3: Creative summary with casual tone"
+    echo "---------------------------------------"
+    if response=$(curl -s -X POST http://localhost:3000/custom-summarize \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"text\": \"$sample_text\",
+            \"style\": \"creative\",
+            \"tone\": \"casual\",
+            \"length\": \"short\",
+            \"max_tokens\": 150
+        }" --max-time 60 2>/dev/null); then
+        
+        if echo "$response" | jq -e '.summary' >/dev/null 2>&1; then
+            echo "$response" | jq -r '.summary'
+            print_success "Creative casual summary test passed"
+        else
+            print_error "Creative casual summary test failed - invalid response format"
+        fi
+    else
+        print_error "Creative casual summary test failed - connection error"
+    fi
+    
+    echo ""
+    print_success "Custom summarization testing complete!"
+}
+
 # Function to show usage
 show_usage() {
     echo "Local LLM Management Script"
@@ -153,16 +333,18 @@ show_usage() {
     echo "Usage: $0 [command] [options]"
     echo ""
     echo "Commands:"
-    echo "  status      - Check containers, models, and API status"
-    echo "  check-curl  - Specifically check services started with curl method"
-    echo "  test        - Run a quick API test"
-    echo "  tests       - Run comprehensive API tests"
-    echo "  start       - Start the Docker containers (development mode)"
-    echo "  start-prod  - Start using pre-built image (production mode)"
-    echo "  start-curl  - Start using curl method (same as one-liner deployment)"
-    echo "  stop        - Stop the Docker containers"
-    echo "  restart     - Restart the Docker containers"
-    echo "  logs        - Show container logs"
+    echo "  status           - Check containers, models, and API status"
+    echo "  check-curl       - Specifically check services started with curl method"
+    echo "  test             - Run a quick API test"
+    echo "  tests            - Run comprehensive API tests"
+    echo "  test-summarize   - Test the /summarize endpoint with different scenarios"
+    echo "  test-custom-summarize - Test the /custom-summarize endpoint with different styles"
+    echo "  start            - Start the Docker containers (development mode)"
+    echo "  start-prod       - Start using pre-built image (production mode)"
+    echo "  start-curl       - Start using curl method (same as one-liner deployment)"
+    echo "  stop             - Stop the Docker containers"
+    echo "  restart          - Restart the Docker containers"
+    echo "  logs             - Show container logs"
     echo ""
     echo "Examples:"
     echo "  $0 status"
@@ -211,6 +393,12 @@ case "${1:-status}" in
         ;;
     "tests")
         run_tests
+        ;;
+    "test-summarize")
+        test_summarize
+        ;;
+    "test-custom-summarize")
+        test_custom_summarize
         ;;
     "start")
         print_status "Starting Local LLM services (development mode)..."
