@@ -2,10 +2,27 @@
 
 ## Quickstart
 
+### Option 1: Using Pre-built Image (Recommended)
+
+1. Download the production compose file:
+```bash
+curl -O https://raw.githubusercontent.com/inderjotpujara/localai-privacy-api/main/docker-compose.prod.yml
+```
+
+2. Start the services:
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+3. Wait for Ollama to download the Llama 3.2 1B model (first run only)
+
+### Option 2: Build from Source
+
 1. Clone this repo
 2. `docker compose up --build`
 3. Wait for Ollama to download the Llama 3.2 1B model (first run only)
-4. Test API:
+
+### Test the API:
 
 ```bash
 curl -X POST http://localhost:3000/chat \
@@ -37,6 +54,29 @@ This is a privacy-first microservice that brings up:
 - **TypeScript**: Fully typed API implementation
 - **Docker Compose**: Single command deployment
 - **Model**: Uses Llama 3.2 1B for fast, efficient local inference
+- **Pre-built Images**: Available on GitHub Container Registry for instant deployment
+
+## Docker Images
+
+Pre-built Docker images are automatically published to GitHub Container Registry:
+
+- **Latest stable**: `ghcr.io/inderjotpujara/localai-privacy-api:latest`
+- **Development**: `ghcr.io/inderjotpujara/localai-privacy-api:main`
+
+### Manual Docker Run
+
+You can also run the API container manually:
+
+```bash
+# Start Ollama first
+docker run -d --name ollama -p 11434:11434 -v ollama:/root/.ollama ollama/ollama:latest
+
+# Start the API
+docker run -d --name local-llm-api \
+  -p 3000:3000 \
+  -e LLM_BASE_URL=http://host.docker.internal:11434/v1 \
+  ghcr.io/inderjotpujara/localai-privacy-api:latest
+```
 
 ## Development
 

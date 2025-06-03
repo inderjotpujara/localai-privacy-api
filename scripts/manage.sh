@@ -126,13 +126,14 @@ run_tests() {
 show_usage() {
     echo "Local LLM Management Script"
     echo ""
-    echo "Usage: $0 [command]"
+    echo "Usage: $0 [command] [options]"
     echo ""
     echo "Commands:"
     echo "  status    - Check containers, models, and API status"
     echo "  test      - Run a quick API test"
     echo "  tests     - Run comprehensive API tests"
-    echo "  start     - Start the Docker containers"
+    echo "  start     - Start the Docker containers (development mode)"
+    echo "  start-prod - Start using pre-built image (production mode)"
     echo "  stop      - Stop the Docker containers"
     echo "  restart   - Restart the Docker containers"
     echo "  logs      - Show container logs"
@@ -140,7 +141,8 @@ show_usage() {
     echo "Examples:"
     echo "  $0 status"
     echo "  $0 test"
-    echo "  $0 start"
+    echo "  $0 start      # Build and run from source"
+    echo "  $0 start-prod # Use pre-built image"
 }
 
 # Main logic
@@ -161,23 +163,41 @@ case "${1:-status}" in
         run_tests
         ;;
     "start")
-        print_status "Starting Local LLM services..."
-        docker compose up -d
+        print_status "Starting Local LLM services (development mode)..."
+        docker compose up -d --build
         print_success "Services started"
+        ;;
+    "start-prod")
+        print_status "Starting Local LLM services (production mode with pre-built image)..."
+        if [ -f "docker-compose.prod.yml" ]; then
+            docker compose -f docker-compose.prod.yml up -d
+        else
+            print_warning "docker-compose.prod.yml not found, downloading..."
+            curl -s -o docker-compose.prod.yml https://raw.githubusercontent.com/inderjotpujara/localai-privacy-api/main/docker-compose.prod.yml
+            docker compose -f docker-compose.prod.yml up -d
+        fi
+        print_success "Services started with pre-built image"
         ;;
     "stop")
         print_status "Stopping Local LLM services..."
-        docker compose down
+        docker compose down 2>/dev/null || true
+        docker compose -f docker-compose.prod.yml down 2>/dev/null || true
         print_success "Services stopped"
         ;;
     "restart")
         print_status "Restarting Local LLM services..."
-        docker compose restart
+        docker compose restart 2>/dev/null || docker compose -f docker-compose.prod.yml restart 2>/dev/null
         print_success "Services restarted"
         ;;
     "logs")
         print_status "Showing container logs..."
-        docker compose logs -f
+        if docker compose ps >/dev/null 2>&1; then
+            docker compose logs -f
+        elif docker compose -f docker-compose.prod.yml ps >/dev/null 2>&1; then
+            docker compose -f docker-compose.prod.yml logs -f
+        else
+            print_error "No running services found"
+        fi
         ;;
     "help"|"-h"|"--help")
         show_usage
